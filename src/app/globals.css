@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* ---------- WordPress theme.json tokens (Twenty Twenty-Five) ---------- */
+:root {
+  --wp--preset--color--base: #ffffff;
+  --wp--preset--color--contrast: #111111;
+  --wp--preset--color--accent-1: #ffee58;
+  --wp--preset--color--accent-2: #f6cff4;
+  --wp--preset--color--accent-3: #503aa8;
+  --wp--preset--color--accent-4: #686868;
+  --wp--preset--color--accent-5: #fbfaf3;
+  --wp--preset--color--accent-6: color-mix(in srgb, currentColor 20%, transparent);
+
+  --wp--preset--spacing--20: 10px;
+  --wp--preset--spacing--30: 20px;
+  --wp--preset--spacing--40: 30px;
+  --wp--preset--spacing--50: clamp(30px, 5vw, 50px);
+  --wp--preset--spacing--60: clamp(30px, 7vw, 70px);
+  --wp--preset--spacing--70: clamp(50px, 7vw, 90px);
+  --wp--preset--spacing--80: clamp(70px, 10vw, 140px);
+
+  --wp--preset--font-size--small: 0.875rem;
+  --wp--preset--font-size--medium: clamp(1rem, 1rem + 0.2vw, 1.125rem);
+  --wp--preset--font-size--large: clamp(1.125rem, 1.125rem + 0.3vw, 1.375rem);
+  --wp--preset--font-size--x-large: clamp(1.75rem, 1.75rem + 1vw, 2rem);
+  --wp--preset--font-size--xx-large: clamp(2.15rem, 2.15rem + 3vw, 3rem);
+
+  --wp--preset--font-family--manrope: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --wp--preset--font-family--fira-code: "Fira Code", ui-monospace, monospace;
+
+  --wp--style--global--content-size: 645px;
+  --wp--style--global--wide-size: 1340px;
+}
+
+body {
+  font-family: var(--wp--preset--font-family--manrope);
+  background: var(--wp--preset--color--base);
+}
+
+/* ---------- Layout / alignment (block-library equivalents) ---------- */
+.entry-content > * {
+  max-width: var(--wp--style--global--content-size);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.entry-content > .alignwide {
+  max-width: var(--wp--style--global--wide-size);
+}
+
+.entry-content > .alignfull {
+  max-width: none;
+  width: 100%;
+  /* Use percentage/clamp padding relative to the element itself, never 100vw calc */
+  padding-left: clamp(1rem, 4vw, 4rem);
+  padding-right: clamp(1rem, 4vw, 4rem);
+  box-sizing: border-box;
+}
+
+.entry-content > .alignleft {
+  float: left;
+  margin-right: 2rem;
+}
+.entry-content > .alignright {
+  float: right;
+  margin-left: 2rem;
+}
+
+/* ---------- Color / background presets ---------- */
+.has-base-background-color { background-color: var(--wp--preset--color--base); }
+.has-contrast-background-color { background-color: var(--wp--preset--color--contrast); }
+.has-accent-1-background-color { background-color: var(--wp--preset--color--accent-1); }
+.has-accent-2-background-color { background-color: var(--wp--preset--color--accent-2); }
+.has-accent-3-background-color { background-color: var(--wp--preset--color--accent-3); }
+.has-accent-4-background-color { background-color: var(--wp--preset--color--accent-4); }
+.has-accent-5-background-color { background-color: var(--wp--preset--color--accent-5); }
+
+.has-base-color { color: var(--wp--preset--color--base); }
+.has-contrast-color { color: var(--wp--preset--color--contrast); }
+.has-accent-1-color { color: var(--wp--preset--color--accent-1); }
+.has-accent-2-color { color: var(--wp--preset--color--accent-2); }
+.has-accent-3-color { color: var(--wp--preset--color--accent-3); }
+.has-accent-4-color { color: var(--wp--preset--color--accent-4); }
+.has-accent-5-color { color: var(--wp--preset--color--accent-5); }
+
+/* Note: colors deliberately inherit unless a block sets one explicitly above —
+   never force a global text/heading color override here. */
+
+/* ---------- Premium styling layered on vanilla WP block markup ---------- */
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.entry-content .wp-block-group,
+.entry-content .wp-block-cover,
+.entry-content .wp-block-columns {
+  border-radius: 1.25rem;
+}
+
+.entry-content .wp-block-group.alignfull,
+.entry-content .wp-block-cover.alignfull {
+  border-radius: 0;
+}
+
+.entry-content .wp-block-image img,
+.entry-content .wp-block-media-text__media img {
+  border-radius: 1rem;
+  box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.35);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.entry-content .wp-block-image img:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 56px -20px rgb(0 0 0 / 0.45);
+}
+
+.entry-content .wp-block-columns {
+  gap: clamp(1.5rem, 4vw, 3rem);
+}
+
+.entry-content .wp-block-button__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.85rem 2rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  box-shadow: 0 10px 25px -10px rgb(80 58 168 / 0.55);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+.entry-content .wp-block-button__link:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 16px 32px -10px rgb(80 58 168 / 0.6);
+}
+.entry-content .wp-block-button:not(.is-style-outline) .wp-block-button__link:not(.has-background) {
+  background-color: var(--wp--preset--color--accent-3);
+  color: #fff;
+}
+
+/* is-content-justification-center is required on the wp:buttons wrapper for
+   center alignment — block-library's own rule handles the flex, this just
+   ensures the wrapper participates as flex in our rendered HTML too. */
+.entry-content .wp-block-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.entry-content .wp-block-buttons.is-content-justification-center {
+  justify-content: center;
+}
+.entry-content .wp-block-buttons.is-content-justification-right {
+  justify-content: flex-end;
+}
+
+.entry-content .wp-block-quote {
+  border-left: 4px solid var(--wp--preset--color--accent-3);
+  padding-left: 1.5rem;
+  font-style: italic;
+  font-size: var(--wp--preset--font-size--large);
+}
+
+.entry-content .wp-block-separator {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  margin: 2rem 0;
+}
+
+.entry-content h1,
+.entry-content h2,
+.entry-content h3,
+.entry-content h4 {
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.entry-content .wp-block-cover {
+  overflow: hidden;
+}
+
+.entry-content .wp-block-group.has-background {
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
