@@ -257,3 +257,14 @@ export const CHECKOUT = gql`
     }
   }
 `;
+
+export const GET_ORDER = gql`
+  query GetOrder($id: ID!) {
+    order(id: $id, idType: DATABASE_ID) {
+      orderNumber
+      status
+      total
+      date
+    }
+  }
+`;

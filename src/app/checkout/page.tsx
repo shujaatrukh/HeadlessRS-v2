@@ -1,9 +1,23 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import Link from "next/link";
 import { getWooClient } from "@/lib/wooClient";
-import { CHECKOUT } from "@/lib/queries";
+import { CHECKOUT, GET_CART } from "@/lib/queries";
+import { parsePrice } from "@/lib/price";
+import { buildPayPalCheckoutUrl } from "@/lib/paypal";
+
+interface CartData {
+  cart: {
+    isEmpty: boolean;
+    contents: {
+      nodes: {
+        key: string;
+        quantity: number;
+        product: { node: { name: string; price?: string | null } };
+      }[];
+    };
+  };
+}
 
 interface CheckoutResult {
   checkout: {
@@ -22,9 +36,6 @@ interface CheckoutResult {
 export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [order, setOrder] = useState<CheckoutResult["checkout"]["order"] | null>(
-    null
-  );
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -47,6 +58,18 @@ export default function CheckoutPage() {
     setError(null);
     try {
       const client = getWooClient();
+
+      const { data: cartData } = await client.query<CartData>({
+        query: GET_CART,
+        fetchPolicy: "network-only",
+      });
+      const cartItems = cartData?.cart?.contents?.nodes || [];
+      if (cartData?.cart?.isEmpty || cartItems.length === 0) {
+        setError("Your cart is empty.");
+        setLoading(false);
+        return;
+      }
+
       const billing = {
         firstName: form.firstName,
         lastName: form.lastName,
@@ -69,57 +92,32 @@ export default function CheckoutPage() {
           },
         },
       });
-      if (data?.checkout?.order) {
-        setOrder(data.checkout.order);
-      } else {
+
+      const createdOrder = data?.checkout?.order;
+      if (!createdOrder) {
         setError("Order could not be created. Please try again.");
+        setLoading(false);
+        return;
       }
+
+      const origin = window.location.origin;
+      const paypalUrl = buildPayPalCheckoutUrl({
+        items: cartItems.map((item) => ({
+          name: item.product.node.name,
+          quantity: item.quantity,
+          unitAmount: parsePrice(item.product.node.price),
+        })),
+        invoiceId: createdOrder.orderNumber,
+        custom: String(createdOrder.databaseId),
+        returnUrl: `${origin}/order-confirmation?order=${createdOrder.databaseId}`,
+        cancelUrl: `${origin}/checkout`,
+      });
+
+      window.location.href = paypalUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed.");
-    } finally {
       setLoading(false);
     }
-  }
-
-  if (order) {
-    return (
-      <section className="mx-auto max-w-2xl px-6 py-24 text-center">
-        <div
-          className="mx-auto flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: "color-mix(in srgb, var(--brand-purple) 12%, transparent)", color: "var(--brand-purple)" }}
-        >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M5 13l4 4L19 7"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <h1 className="mt-6 text-3xl font-extrabold tracking-tight" style={{ color: "var(--brand-ink)" }}>
-          Order #{order.orderNumber} received
-        </h1>
-        <p className="mt-3 text-black/60">
-          Status: {order.status} · Total: {order.total}
-        </p>
-        <p className="mt-2 text-sm text-black/50">
-          This order was created without a live payment gateway wired up —
-          we&rsquo;ll follow up directly to arrange payment.
-        </p>
-        <Link
-          href="/shop"
-          className="mt-8 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold"
-          style={{
-            backgroundImage: "linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%)",
-            color: "#111111",
-          }}
-        >
-          Continue browsing
-        </Link>
-      </section>
-    );
   }
 
   return (
@@ -128,8 +126,8 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       <p className="mt-2 text-sm text-black/50">
-        No live payment gateway is connected yet — submitting creates a
-        WooCommerce order that our team will follow up on directly.
+        Submitting creates your order and takes you to PayPal to complete
+        payment securely.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -203,7 +201,7 @@ export default function CheckoutPage() {
             color: "#111111",
           }}
         >
-          {loading ? "Placing order…" : "Place order"}
+          {loading ? "Redirecting to PayPal…" : "Pay with PayPal"}
         </button>
       </form>
     </section>
