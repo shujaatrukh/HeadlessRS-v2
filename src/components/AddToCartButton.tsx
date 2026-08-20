@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { getWooClient } from "@/lib/wooClient";
 import { ADD_TO_CART } from "@/lib/queries";
+import { useCart } from "@/lib/cartContext";
 
 export default function AddToCartButton({ productId }: { productId: number }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [added, setAdded] = useState(false);
+  const { refreshCount } = useCart();
 
   async function handleAdd() {
     setLoading(true);
@@ -19,7 +20,9 @@ export default function AddToCartButton({ productId }: { productId: number }) {
         mutation: ADD_TO_CART,
         variables: { productId, quantity: 1 },
       });
-      router.push("/cart");
+      await refreshCount();
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -40,7 +43,7 @@ export default function AddToCartButton({ productId }: { productId: number }) {
             "0 10px 24px -8px color-mix(in srgb, var(--brand-gold) 70%, transparent), 0 2px 6px rgb(0 0 0 / 0.08)",
         }}
       >
-        {loading ? "Adding…" : "Add to Cart"}
+        {loading ? "Adding…" : added ? "Added ✓" : "Add to Cart"}
       </button>
       {error ? <p className="mt-3 text-sm text-red-600">{error}</p> : null}
     </div>

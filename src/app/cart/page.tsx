@@ -9,6 +9,7 @@ import {
   REMOVE_ITEMS_FROM_CART,
 } from "@/lib/queries";
 import { formatPrice } from "@/lib/price";
+import { useCart } from "@/lib/cartContext";
 
 interface CartItem {
   key: string;
@@ -39,6 +40,7 @@ export default function CartPage() {
   const [cart, setCart] = useState<CartData["cart"] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { refreshCount } = useCart();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -63,7 +65,8 @@ export default function CartPage() {
       mutation: UPDATE_CART_ITEM_QUANTITIES,
       variables: { items: [{ key, quantity }] },
     });
-    load();
+    await load();
+    refreshCount();
   }
 
   async function removeItem(key: string) {
@@ -72,7 +75,8 @@ export default function CartPage() {
       mutation: REMOVE_ITEMS_FROM_CART,
       variables: { keys: [key] },
     });
-    load();
+    await load();
+    refreshCount();
   }
 
   return (
