@@ -87,7 +87,7 @@ export default function CheckoutPage() {
           input: {
             billing,
             shipping: billing,
-            paymentMethod: "cheque",
+            paymentMethod: "cod",
             isPaid: false,
           },
         },
