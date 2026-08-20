@@ -30,14 +30,74 @@
 
   --wp--style--global--content-size: 645px;
   --wp--style--global--wide-size: 1340px;
+
+  /* ---- Brand accent shorthands (black / gold / off-white already in theme.json) ---- */
+  --brand-ink: var(--wp--preset--color--contrast);
+  --brand-gold: var(--wp--preset--color--accent-1);
+  --brand-gold-deep: #e6c400;
+  --brand-cream: var(--wp--preset--color--accent-5);
+  --brand-purple: var(--wp--preset--color--accent-3);
+
+  --card-bg: #ffffff;
+  --card-border: color-mix(in srgb, var(--brand-ink) 8%, transparent);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.14);
+  --shadow-lift: 0 8px 16px -6px rgb(0 0 0 / 0.12), 0 28px 56px -20px rgb(0 0 0 / 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--wp--preset--font-family--manrope);
   background: var(--wp--preset--color--base);
+  color: var(--brand-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Real type scale (headings need weight/tracking, not defaults) ---------- */
+/* :where() keeps these at zero specificity so any Tailwind utility class
+   (e.g. text-transparent on the hero gradient headline) always wins. */
+:where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--brand-ink);
+}
+:where(h1) { font-size: clamp(2.5rem, 2rem + 2.5vw, 4rem); line-height: 1.05; }
+:where(h2) { font-size: clamp(1.875rem, 1.6rem + 1.4vw, 2.75rem); }
+:where(h3) { font-size: clamp(1.5rem, 1.35rem + 0.8vw, 2rem); }
+:where(h4) { font-size: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem); font-weight: 700; }
+:where(h5) { font-size: 1.125rem; font-weight: 700; }
+:where(h6) {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+:where(p) {
+  max-width: 68ch;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--brand-ink) 68%, transparent);
+}
+.entry-content p:first-child { margin-top: 0; }
+
+a {
+  color: inherit;
 }
 
 /* ---------- Layout / alignment (block-library equivalents) ---------- */
+.entry-content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2.5rem, 5vw, 5rem);
+}
+
 .entry-content > * {
   max-width: var(--wp--style--global--content-size);
   margin-left: auto;
@@ -66,6 +126,69 @@ body {
   margin-left: 2rem;
 }
 
+/* wp:columns is WordPress's own multi-item layout primitive — this is what
+   renders "What We Do" style sections. Force it into a real responsive grid
+   of elevated cards instead of raw stacked text. */
+.entry-content .wp-block-columns {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  max-width: var(--wp--style--global--wide-size);
+  align-items: stretch;
+}
+
+.entry-content .wp-block-columns > .wp-block-column {
+  flex: none;
+  width: auto !important;
+  max-width: none;
+}
+
+.entry-content .wp-block-column {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 1.25rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease, border-color 0.35s ease;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* accent bar */
+.entry-content .wp-block-column::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-gold), var(--brand-gold-deep));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.entry-content .wp-block-column:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lift);
+  border-color: color-mix(in srgb, var(--brand-gold) 40%, transparent);
+}
+.entry-content .wp-block-column:hover::before {
+  transform: scaleX(1);
+}
+
+.entry-content .wp-block-column > *:first-child { margin-top: 0; }
+.entry-content .wp-block-column h2,
+.entry-content .wp-block-column h3,
+.entry-content .wp-block-column h4 {
+  max-width: none;
+  margin-bottom: 0.5rem;
+}
+.entry-content .wp-block-column p {
+  max-width: none;
+  font-size: 0.975rem;
+}
+
 /* ---------- Color / background presets ---------- */
 .has-base-background-color { background-color: var(--wp--preset--color--base); }
 .has-contrast-background-color { background-color: var(--wp--preset--color--contrast); }
@@ -87,16 +210,9 @@ body {
    never force a global text/heading color override here. */
 
 /* ---------- Premium styling layered on vanilla WP block markup ---------- */
-.entry-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
 .entry-content .wp-block-group,
-.entry-content .wp-block-cover,
-.entry-content .wp-block-columns {
-  border-radius: 1.25rem;
+.entry-content .wp-block-cover {
+  border-radius: 1.5rem;
 }
 
 .entry-content .wp-block-group.alignfull,
@@ -104,9 +220,42 @@ body {
   border-radius: 0;
 }
 
+/* Black/gold full-bleed sections (hero-like groups/covers) get a subtle
+   brand gradient instead of a flat rectangle. */
+.entry-content .wp-block-group.has-contrast-background-color,
+.entry-content .wp-block-cover.has-contrast-background-color,
+.entry-content .wp-block-group.alignfull.has-background,
+.entry-content .wp-block-cover.alignfull {
+  background-image:
+    radial-gradient(60% 100% at 15% 0%, color-mix(in srgb, var(--brand-gold) 18%, transparent), transparent 60%),
+    linear-gradient(160deg, #000000 0%, #161616 55%, #050505 100%);
+  color: #fdfdfb;
+  position: relative;
+}
+.entry-content .wp-block-group.has-contrast-background-color h1,
+.entry-content .wp-block-group.has-contrast-background-color h2,
+.entry-content .wp-block-group.has-contrast-background-color h3,
+.entry-content .wp-block-cover.has-contrast-background-color h1,
+.entry-content .wp-block-cover.has-contrast-background-color h2,
+.entry-content .wp-block-cover.has-contrast-background-color h3,
+.entry-content .wp-block-cover h1,
+.entry-content .wp-block-cover h2,
+.entry-content .wp-block-cover h3 {
+  color: #ffffff;
+  background: linear-gradient(90deg, #ffffff 30%, var(--brand-gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.entry-content .wp-block-group.has-contrast-background-color p,
+.entry-content .wp-block-cover.has-contrast-background-color p,
+.entry-content .wp-block-cover p {
+  color: color-mix(in srgb, #ffffff 72%, transparent);
+}
+
 .entry-content .wp-block-image img,
 .entry-content .wp-block-media-text__media img {
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   box-shadow: 0 20px 40px -20px rgb(0 0 0 / 0.35);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
@@ -115,30 +264,68 @@ body {
   box-shadow: 0 28px 56px -20px rgb(0 0 0 / 0.45);
 }
 
-.entry-content .wp-block-columns {
-  gap: clamp(1.5rem, 4vw, 3rem);
-}
-
+/* ---------- Buttons: premium gradient pills with real motion ---------- */
 .entry-content .wp-block-button__link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   border-radius: 999px;
-  padding: 0.85rem 2rem;
-  font-weight: 600;
+  padding: 0.9rem 2.25rem;
+  font-weight: 700;
+  font-size: 0.975rem;
   letter-spacing: -0.01em;
   text-decoration: none;
-  box-shadow: 0 10px 25px -10px rgb(80 58 168 / 0.55);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  border: 1px solid transparent;
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s ease, filter 0.25s ease;
+  will-change: transform;
 }
 .entry-content .wp-block-button__link:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-  box-shadow: 0 16px 32px -10px rgb(80 58 168 / 0.6);
+  transform: translateY(-3px) scale(1.02);
 }
+.entry-content .wp-block-button__link:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+/* Any explicit-background button (e.g. WP editor's accent-1/gold pill) still
+   needs real depth + hover lift, not just a flat color chip. */
+.entry-content .wp-block-button__link.has-background {
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.22), 0 2px 6px rgb(0 0 0 / 0.08);
+  background-image: linear-gradient(135deg, color-mix(in srgb, currentColor 0%, transparent) 0%, rgb(0 0 0 / 0.06) 100%);
+}
+.entry-content .wp-block-button__link.has-background:hover {
+  box-shadow: 0 18px 40px -10px rgb(0 0 0 / 0.32), 0 4px 10px rgb(0 0 0 / 0.12);
+  filter: brightness(1.05);
+}
+.entry-content .wp-block-button__link.has-accent-1-background-color {
+  background-image: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%);
+}
+
+/* Default (no explicit background) — black/gold gradient signature button */
 .entry-content .wp-block-button:not(.is-style-outline) .wp-block-button__link:not(.has-background) {
-  background-color: var(--wp--preset--color--accent-3);
-  color: #fff;
+  background-image: linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%);
+  color: #111111;
+  box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--brand-gold) 70%, transparent), 0 2px 6px rgb(0 0 0 / 0.08);
+}
+.entry-content .wp-block-button:not(.is-style-outline) .wp-block-button__link:not(.has-background):hover {
+  box-shadow: 0 18px 36px -10px color-mix(in srgb, var(--brand-gold) 80%, transparent), 0 4px 10px rgb(0 0 0 / 0.12);
+  filter: brightness(1.03);
+}
+
+/* Explicit contrast (black) background buttons still get depth + gold ring on hover */
+.entry-content .wp-block-button__link.has-contrast-background-color {
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.45);
+}
+.entry-content .wp-block-button__link.has-contrast-background-color:hover {
+  box-shadow: 0 0 0 2px var(--brand-gold), 0 18px 36px -10px rgb(0 0 0 / 0.55);
+}
+
+.entry-content .wp-block-button.is-style-outline .wp-block-button__link {
+  border-color: currentColor;
+  background: transparent;
+}
+.entry-content .wp-block-button.is-style-outline .wp-block-button__link:hover {
+  background: color-mix(in srgb, var(--brand-gold) 12%, transparent);
 }
 
 /* is-content-justification-center is required on the wp:buttons wrapper for
@@ -157,7 +344,7 @@ body {
 }
 
 .entry-content .wp-block-quote {
-  border-left: 4px solid var(--wp--preset--color--accent-3);
+  border-left: 4px solid var(--brand-gold-deep);
   padding-left: 1.5rem;
   font-style: italic;
   font-size: var(--wp--preset--font-size--large);
@@ -174,7 +361,6 @@ body {
 .entry-content h3,
 .entry-content h4 {
   letter-spacing: -0.02em;
-  line-height: 1.15;
 }
 
 .entry-content .wp-block-cover {
@@ -182,5 +368,26 @@ body {
 }
 
 .entry-content .wp-block-group.has-background {
-  padding: clamp(1.5rem, 4vw, 3rem);
+  padding: clamp(1.75rem, 4vw, 3.5rem);
+}
+
+/* ---------- Motion: scroll-reveal + hover polish (used by ScrollReveal.tsx) ---------- */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(24px);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.7s cubic-bezier(.2,.8,.2,1), transform 0.7s cubic-bezier(.2,.8,.2,1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-init { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+  .entry-content .wp-block-column,
+  .entry-content .wp-block-button__link,
+  .entry-content .wp-block-image img {
+    transition: none !important;
+  }
 }
