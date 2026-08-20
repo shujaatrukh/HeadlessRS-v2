@@ -6,6 +6,8 @@ import { CHECKOUT, GET_CART } from "@/lib/queries";
 import { parsePrice } from "@/lib/price";
 import { buildPayPalCheckoutUrl } from "@/lib/paypal";
 
+const FREE_PLUGIN_SLUG = "rukh-content-tools-free-wordpress-plugin";
+
 interface CartData {
   cart: {
     isEmpty: boolean;
@@ -13,7 +15,7 @@ interface CartData {
       nodes: {
         key: string;
         quantity: number;
-        product: { node: { name: string; price?: string | null } };
+        product: { node: { name: string; slug: string; price?: string | null } };
       }[];
     };
   };
@@ -105,11 +107,17 @@ export default function CheckoutPage() {
         (sum, item) => sum + parsePrice(item.product.node.price) * item.quantity,
         0
       );
+      const includesFreePlugin = cartItems.some(
+        (item) => item.product.node.slug === FREE_PLUGIN_SLUG
+      );
+      const confirmationUrl = `${origin}/order-confirmation?order=${createdOrder.databaseId}${
+        includesFreePlugin ? "&download=1" : ""
+      }`;
 
       // PayPal's hosted checkout can't process a $0 order — free items
       // (e.g. the free plugin download) skip straight to confirmation.
       if (orderTotal <= 0) {
-        window.location.href = `${origin}/order-confirmation?order=${createdOrder.databaseId}`;
+        window.location.href = confirmationUrl;
         return;
       }
 
@@ -121,7 +129,7 @@ export default function CheckoutPage() {
         })),
         invoiceId: createdOrder.orderNumber,
         custom: String(createdOrder.databaseId),
-        returnUrl: `${origin}/order-confirmation?order=${createdOrder.databaseId}`,
+        returnUrl: confirmationUrl,
         cancelUrl: `${origin}/checkout`,
       });
 
@@ -138,8 +146,8 @@ export default function CheckoutPage() {
         Checkout
       </h1>
       <p className="mt-2 text-sm text-black/50">
-        Submitting creates your order and takes you to PayPal to complete
-        payment securely.
+        Submitting creates your order. Paid items continue to PayPal to
+        complete payment securely; free items complete instantly.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -213,7 +221,7 @@ export default function CheckoutPage() {
             color: "#111111",
           }}
         >
-          {loading ? "Redirecting to PayPal…" : "Pay with PayPal"}
+          {loading ? "Processing…" : "Complete Order"}
         </button>
       </form>
     </section>

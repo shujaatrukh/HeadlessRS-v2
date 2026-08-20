@@ -25,6 +25,7 @@ interface OrderData {
 function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order");
+  const hasFreeDownload = searchParams.get("download") === "1";
   const [order, setOrder] = useState<OrderData["order"] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -76,32 +77,37 @@ function OrderConfirmationContent() {
       {loading ? (
         <p className="mt-3 text-black/50">Confirming your order…</p>
       ) : order ? (
-        <>
-          <p className="mt-3 text-black/60">
-            Order #{order.orderNumber} · {order.status} · {order.total}
-          </p>
-          {order.lineItems?.nodes.some(
-            (item) => item.product?.node.slug === FREE_PLUGIN_SLUG
-          ) ? (
-            <a
-              href={FREE_PLUGIN_DOWNLOAD_URL}
-              className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold transition-transform duration-300 hover:-translate-y-0.5"
-              style={{
-                backgroundImage:
-                  "linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%)",
-                color: "#111111",
-              }}
-            >
-              Download Rukh Content Tools (.zip)
-            </a>
-          ) : null}
-        </>
+        <p className="mt-3 text-black/60">
+          Order #{order.orderNumber} · {order.status} · {order.total}
+        </p>
+      ) : hasFreeDownload ? (
+        <p className="mt-3 text-black/60">
+          {orderId ? `Order #${orderId} ` : ""}is all set — grab your download
+          below.
+        </p>
       ) : (
         <p className="mt-3 text-black/60">
           {orderId ? `Order #${orderId} ` : ""}was submitted to PayPal. We&rsquo;ll
           confirm payment and follow up shortly.
         </p>
       )}
+
+      {hasFreeDownload ||
+      order?.lineItems?.nodes.some(
+        (item) => item.product?.node.slug === FREE_PLUGIN_SLUG
+      ) ? (
+        <a
+          href={FREE_PLUGIN_DOWNLOAD_URL}
+          className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold transition-transform duration-300 hover:-translate-y-0.5"
+          style={{
+            backgroundImage:
+              "linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%)",
+            color: "#111111",
+          }}
+        >
+          Download Rukh Content Tools (.zip)
+        </a>
+      ) : null}
       <Link
         href="/shop"
         className="mt-8 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold"
