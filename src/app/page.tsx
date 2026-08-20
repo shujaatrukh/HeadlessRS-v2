@@ -42,38 +42,5 @@ export default async function HomePage() {
   const data = await fetchFrontPage();
   if (!data.nodeByUri) return notFound();
 
-  return (
-    <>
-      <section className="relative overflow-hidden bg-[#0a0a0a]">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(60% 80% at 20% 0%, color-mix(in srgb, var(--brand-gold) 22%, transparent), transparent 60%), radial-gradient(50% 60% at 100% 100%, color-mix(in srgb, var(--brand-purple) 25%, transparent), transparent 65%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-24 text-center sm:pb-28 sm:pt-32">
-          <h1
-            className="mx-auto max-w-3xl text-4xl font-extrabold tracking-tight sm:text-6xl"
-            style={{
-              backgroundImage:
-                "linear-gradient(90deg, #ffffff 35%, var(--brand-gold) 100%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              color: "transparent",
-            }}
-          >
-            {data.nodeByUri.title || data.generalSettings?.title}
-          </h1>
-          {data.generalSettings?.description ? (
-            <p className="mx-auto mt-6 max-w-xl text-base text-white/60 sm:text-lg">
-              {data.generalSettings.description}
-            </p>
-          ) : null}
-        </div>
-      </section>
-      <WpContent html={data.nodeByUri.content} />
-    </>
-  );
+  return <WpContent html={data.nodeByUri.content} />;
 }
