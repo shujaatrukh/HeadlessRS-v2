@@ -101,6 +101,18 @@ export default function CheckoutPage() {
       }
 
       const origin = window.location.origin;
+      const orderTotal = cartItems.reduce(
+        (sum, item) => sum + parsePrice(item.product.node.price) * item.quantity,
+        0
+      );
+
+      // PayPal's hosted checkout can't process a $0 order — free items
+      // (e.g. the free plugin download) skip straight to confirmation.
+      if (orderTotal <= 0) {
+        window.location.href = `${origin}/order-confirmation?order=${createdOrder.databaseId}`;
+        return;
+      }
+
       const paypalUrl = buildPayPalCheckoutUrl({
         items: cartItems.map((item) => ({
           name: item.product.node.name,

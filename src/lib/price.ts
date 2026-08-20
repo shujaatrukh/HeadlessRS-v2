@@ -5,6 +5,7 @@
  */
 export function formatPrice(price?: string | null): string {
   if (!price) return "Contact for pricing";
+  if (parsePrice(price) === 0) return "Free";
   return price;
 }
 

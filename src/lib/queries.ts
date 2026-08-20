@@ -265,6 +265,16 @@ export const GET_ORDER = gql`
       status
       total
       date
+      lineItems {
+        nodes {
+          product {
+            node {
+              slug
+              name
+            }
+          }
+        }
+      }
     }
   }
 `;

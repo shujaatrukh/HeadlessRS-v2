@@ -46,6 +46,7 @@ const ICONS: Record<string, string> = {
   "wordpress-development": "🛠️",
   "microsoft-fabric-data-analytics-engagement": "📊",
   "wordpress-care-maintenance-plan": "🛡️",
+  "rukh-content-tools-free-wordpress-plugin": "🎁",
 };
 
 function iconFor(href: string) {

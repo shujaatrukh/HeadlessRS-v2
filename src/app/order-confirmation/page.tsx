@@ -6,12 +6,19 @@ import Link from "next/link";
 import { getWooClient } from "@/lib/wooClient";
 import { GET_ORDER } from "@/lib/queries";
 
+const FREE_PLUGIN_SLUG = "rukh-content-tools-free-wordpress-plugin";
+const FREE_PLUGIN_DOWNLOAD_URL =
+  "https://cms.rukhsolutions.com/wp-content/uploads/woocommerce_uploads/rukh-content-tools.zip";
+
 interface OrderData {
   order: {
     orderNumber: string;
     status: string;
     total: string;
     date: string;
+    lineItems?: {
+      nodes: { product: { node: { slug: string; name: string } } | null }[];
+    } | null;
   } | null;
 }
 
@@ -69,9 +76,26 @@ function OrderConfirmationContent() {
       {loading ? (
         <p className="mt-3 text-black/50">Confirming your order…</p>
       ) : order ? (
-        <p className="mt-3 text-black/60">
-          Order #{order.orderNumber} · {order.status} · {order.total}
-        </p>
+        <>
+          <p className="mt-3 text-black/60">
+            Order #{order.orderNumber} · {order.status} · {order.total}
+          </p>
+          {order.lineItems?.nodes.some(
+            (item) => item.product?.node.slug === FREE_PLUGIN_SLUG
+          ) ? (
+            <a
+              href={FREE_PLUGIN_DOWNLOAD_URL}
+              className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold transition-transform duration-300 hover:-translate-y-0.5"
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, var(--brand-gold) 0%, var(--brand-gold-deep) 100%)",
+                color: "#111111",
+              }}
+            >
+              Download Rukh Content Tools (.zip)
+            </a>
+          ) : null}
+        </>
       ) : (
         <p className="mt-3 text-black/60">
           {orderId ? `Order #${orderId} ` : ""}was submitted to PayPal. We&rsquo;ll
