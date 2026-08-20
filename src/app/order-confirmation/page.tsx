@@ -7,8 +7,12 @@ import { getWooClient } from "@/lib/wooClient";
 import { GET_ORDER } from "@/lib/queries";
 
 const FREE_PLUGIN_SLUG = "rukh-content-tools-free-wordpress-plugin";
+// Publicly-readable media-library copy — the woocommerce_uploads/ copy
+// (used for WooCommerce's own downloadable-file validation) is protected by
+// an .htaccess rule and returns 403 on direct requests, so this free/public
+// download link points at the plain media upload instead.
 const FREE_PLUGIN_DOWNLOAD_URL =
-  "https://cms.rukhsolutions.com/wp-content/uploads/woocommerce_uploads/rukh-content-tools.zip";
+  "https://cms.rukhsolutions.com/wp-content/uploads/2026/08/rukh-content-tools.zip";
 
 interface OrderData {
   order: {
